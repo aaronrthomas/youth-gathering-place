@@ -1,23 +1,30 @@
-﻿/**
+/**
  * useAdminData
  *
  * Returns the live version of events, pastEvents, weeklyRhythm and gallery.
  *
- * Events / pastEvents / weeklyRhythm are stored in Firestore so every
- * visitor sees the latest admin edits in real-time.
+ * All data is stored in Firestore so every visitor sees the latest admin
+ * edits in real-time across all devices.
  *
- * Gallery images (base64 data URLs) are kept in localStorage only because
- * Firestore documents have a 1 MB limit that images quickly exceed.
+ * Gallery images are uploaded to Firebase Storage; only the download URLs
+ * (+ captions) are stored in Firestore — avoiding the 1 MB document limit.
  *
  * Firestore structure:
  *   siteData/events        { items: CommunityEvent[] }
  *   siteData/pastEvents    { items: CommunityEvent[] }
  *   siteData/weeklyRhythm  { items: WeeklySlot[]     }
+ *   siteData/gallery       { items: GalleryImage[]   }  ← URLs, not base64
  */
 
 import { useState, useEffect } from "react";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import { db, storage } from "@/lib/firebase";
 import {
   events as defaultEvents,
   pastEvents as defaultPastEvents,
@@ -27,7 +34,7 @@ import {
 
 export type GalleryImage = {
   id: string;
-  src: string; // base-64 data URL
+  src: string;   // Firebase Storage download URL
   caption: string;
 };
 
@@ -49,31 +56,6 @@ async function writeDoc<T>(docId: string, items: T) {
 }
 
 // ---------------------------------------------------------------------------
-// localStorage helpers (gallery only)
-// ---------------------------------------------------------------------------
-
-const GALLERY_KEY = "admin:gallery";
-
-function readLocal<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-export function saveToStorage<T>(key: string, value: T) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    window.dispatchEvent(new StorageEvent("storage", { key }));
-  } catch {
-    throw new Error("Could not save — storage may be full.");
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
 
@@ -82,9 +64,7 @@ export function useAdminData() {
   const [events, setEvents] = useState<CommunityEvent[]>(defaultEvents);
   const [pastEvents, setPastEvents] = useState<CommunityEvent[]>(defaultPastEvents);
   const [weeklyRhythm, setWeeklyRhythm] = useState<WeeklySlot[]>(defaultWeeklyRhythm);
-  const [gallery, setGallery] = useState<GalleryImage[]>(() =>
-    readLocal(GALLERY_KEY, []),
-  );
+  const [gallery, setGallery] = useState<GalleryImage[]>([]);
 
   useEffect(() => {
     // Subscribe to Firestore — updates arrive on ALL devices in real-time.
@@ -100,17 +80,15 @@ export function useAdminData() {
       setWeeklyRhythm(snap.exists() ? (snap.data().items as WeeklySlot[]) : defaultWeeklyRhythm);
     });
 
-    // Gallery stays local (images too large for Firestore).
-    function onStorage(e: StorageEvent) {
-      if (e.key === GALLERY_KEY) setGallery(readLocal(GALLERY_KEY, []));
-    }
-    window.addEventListener("storage", onStorage);
+    const unsubGallery = onSnapshot(doc(db, FS, "gallery"), (snap) => {
+      setGallery(snap.exists() ? (snap.data().items as GalleryImage[]) : []);
+    });
 
     return () => {
       unsubEvents();
       unsubPast();
       unsubRhythm();
-      window.removeEventListener("storage", onStorage);
+      unsubGallery();
     };
   }, []);
 
@@ -121,13 +99,41 @@ export function useAdminData() {
 // adminStorage — called by admin.tsx to persist changes
 // ---------------------------------------------------------------------------
 
+/**
+ * Upload one File to Firebase Storage and return a GalleryImage record
+ * with the permanent download URL.
+ */
+export async function uploadGalleryImage(
+  file: File,
+  id: string,
+): Promise<GalleryImage> {
+  const storageRef = ref(storage, `gallery/${id}_${file.name}`);
+  await uploadBytes(storageRef, file);
+  const src = await getDownloadURL(storageRef);
+  return {
+    id,
+    src,
+    caption: file.name.replace(/\.[^.]+$/, ""),
+  };
+}
+
+/**
+ * Delete an image from Firebase Storage by its URL.
+ * Fails silently if the file is already gone.
+ */
+export async function deleteGalleryImage(src: string): Promise<void> {
+  try {
+    const fileRef = ref(storage, src);
+    await deleteObject(fileRef);
+  } catch {
+    // File already deleted or URL not a Storage path — ignore.
+  }
+}
+
 export const adminStorage = {
   saveEvents: (data: CommunityEvent[]) => writeDoc("events", data),
   savePastEvents: (data: CommunityEvent[]) => writeDoc("pastEvents", data),
   saveWeeklyRhythm: (data: WeeklySlot[]) => writeDoc("weeklyRhythm", data),
-  // Gallery stays in localStorage only
-  saveGallery: (data: GalleryImage[]) => saveToStorage(GALLERY_KEY, data),
-  // Kept for backwards-compatibility (used nowhere else currently)
-  read: readLocal,
-  KEYS: { gallery: GALLERY_KEY },
+  saveGallery: (data: GalleryImage[]) => writeDoc("gallery", data),
 };
+

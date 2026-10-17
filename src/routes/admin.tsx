@@ -3,7 +3,6 @@ import {
   useState,
   useRef,
   useCallback,
-  type ChangeEvent,
   type FormEvent,
 } from "react";
 import {
@@ -26,6 +25,8 @@ import {
 } from "lucide-react";
 import {
   adminStorage,
+  uploadGalleryImage,
+  deleteGalleryImage,
   useAdminData,
   type GalleryImage,
   type WeeklySlot,
@@ -248,7 +249,6 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         {tab === "gallery" && (
           <GalleryPanel
             images={gallery}
-            onSave={adminStorage.saveGallery}
           />
         )}
       </div>
@@ -744,14 +744,13 @@ function WeeklyRhythmPanel({
 // ─── Gallery Panel ────────────────────────────────────────────────────────────
 function GalleryPanel({
   images,
-  onSave,
 }: {
   images: GalleryImage[];
-  onSave: (data: GalleryImage[]) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [toast, setToast] = useState("");
 
@@ -761,10 +760,10 @@ function GalleryPanel({
   }
 
   const processFiles = useCallback(
-    (files: FileList | null) => {
+    async (files: FileList | null) => {
       if (!files) return;
       setError("");
-      const MAX_SIZE = 4 * 1024 * 1024; // 4 MB per image
+      const MAX_SIZE = 10 * 1024 * 1024; // 10 MB per image (Storage has no 4 MB limit)
       const allowed = Array.from(files).filter((f) =>
         f.type.startsWith("image/"),
       );
@@ -772,45 +771,32 @@ function GalleryPanel({
         setError("Please select image files (JPEG, PNG, WebP, GIF).");
         return;
       }
+      const oversized = allowed.find((f) => f.size > MAX_SIZE);
+      if (oversized) {
+        setError(`"${oversized.name}" is too large (max 10 MB).`);
+        return;
+      }
 
-      let loaded = 0;
-      const newImages: GalleryImage[] = [];
-
-      allowed.forEach((file) => {
-        if (file.size > MAX_SIZE) {
-          setError(`"${file.name}" is too large (max 4 MB).`);
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const src = ev.target?.result as string;
-          newImages.push({
-            id: uid(),
-            src,
-            caption: file.name.replace(/\.[^.]+$/, ""),
-          });
-          loaded++;
-          if (loaded === allowed.length) {
-            const updated = [...images, ...newImages];
-            try {
-              onSave(updated);
-              showToast(`${newImages.length} image(s) added ✓`);
-            } catch (err: unknown) {
-              setError(
-                err instanceof Error
-                  ? err.message
-                  : "Storage full — try removing some images first.",
-              );
-            }
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+      setUploading(true);
+      try {
+        const uploaded = await Promise.all(
+          allowed.map((file) => uploadGalleryImage(file, uid())),
+        );
+        const updated = [...images, ...uploaded];
+        await adminStorage.saveGallery(updated);
+        showToast(`${uploaded.length} image(s) uploaded ✓`);
+      } catch (err: unknown) {
+        setError(
+          err instanceof Error ? err.message : "Upload failed — please try again.",
+        );
+      } finally {
+        setUploading(false);
+      }
     },
-    [images, onSave],
+    [images],
   );
 
-  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     processFiles(e.target.files);
     e.target.value = "";
   }
@@ -821,17 +807,21 @@ function GalleryPanel({
     processFiles(e.dataTransfer.files);
   }
 
-  function deleteImage(id: string) {
-    const updated = images.filter((img) => img.id !== id);
-    onSave(updated);
+  async function deleteImage(id: string) {
+    const img = images.find((i) => i.id === id);
+    const updated = images.filter((i) => i.id !== id);
+    // Save the updated list first so it disappears immediately
+    await adminStorage.saveGallery(updated);
+    // Then clean up the Storage file in the background
+    if (img) deleteGalleryImage(img.src);
     showToast("Image removed");
   }
 
-  function updateCaption(id: string, caption: string) {
+  async function updateCaption(id: string, caption: string) {
     const updated = images.map((img) =>
       img.id === id ? { ...img, caption } : img,
     );
-    onSave(updated);
+    await adminStorage.saveGallery(updated);
     setEditingId(null);
     showToast("Caption updated ✓");
   }
@@ -843,10 +833,19 @@ function GalleryPanel({
           Image Gallery
         </h2>
         <button
-          onClick={() => fileRef.current?.click()}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+          onClick={() => !uploading && fileRef.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
         >
-          <Upload className="h-4 w-4" /> Upload images
+          {uploading ? (
+            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+          ) : (
+            <Upload className="h-4 w-4" />
+          )}
+          {uploading ? "Uploading…" : "Upload images"}
         </button>
         <input
           ref={fileRef}

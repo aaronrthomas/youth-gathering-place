@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { X, ChevronLeft, ChevronRight, Images } from "lucide-react";
-import { adminStorage, type GalleryImage } from "@/hooks/useAdminData";
+import { useAdminData, type GalleryImage } from "@/hooks/useAdminData";
 
 export const Route = createFileRoute("/gallery")({
   head: () => ({
@@ -17,28 +17,8 @@ export const Route = createFileRoute("/gallery")({
   component: GalleryPage,
 });
 
-function useGallery() {
-  const [images, setImages] = useState<GalleryImage[]>(() =>
-    adminStorage.read<GalleryImage[]>(adminStorage.KEYS.gallery, []),
-  );
-
-  useEffect(() => {
-    function onStorage(e: StorageEvent) {
-      if (e.key === adminStorage.KEYS.gallery) {
-        setImages(
-          adminStorage.read<GalleryImage[]>(adminStorage.KEYS.gallery, []),
-        );
-      }
-    }
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
-
-  return images;
-}
-
 function GalleryPage() {
-  const images = useGallery();
+  const { gallery: images } = useAdminData();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const openLightbox = (index: number) => setLightboxIndex(index);
