@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+ï»¿import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { X, ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { adminStorage, type GalleryImage } from "@/hooks/useAdminData";
@@ -6,7 +6,7 @@ import { adminStorage, type GalleryImage } from "@/hooks/useAdminData";
 export const Route = createFileRoute("/gallery")({
   head: () => ({
     meta: [
-      { title: "Gallery — Yuvajana Sakhyam, Pattor" },
+      { title: "Gallery ï¿½ Yuvajana Sakhyam, Pattor" },
       {
         name: "description",
         content:
@@ -188,6 +188,7 @@ function Lightbox({
 }) {
   const img = images[index];
   const total = images.length;
+  if (!img) return null;
 
   return (
     <div
@@ -252,7 +253,7 @@ function EmptyState() {
       <div>
         <p className="font-serif text-xl text-foreground">No photos yet</p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Check back soon — our gallery will be updated with photos from our
+          Check back soon ï¿½ our gallery will be updated with photos from our
           events and gatherings.
         </p>
       </div>
