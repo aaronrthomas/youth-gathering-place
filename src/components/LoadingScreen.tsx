@@ -41,8 +41,8 @@ export function LoadingScreen() {
 
       {/* Wordmark */}
       <div className="loading-wordmark">
-        <p className="loading-place">St. Thomas Mar Thoma Parish · Pattor</p>
-        <h1 className="loading-title">Yuvajana Sakhyam</h1>
+        <p className="loading-place">St. Thomas Mar Thoma · Pattor</p>
+        <h1 className="loading-title">Youth's Union</h1>
         <div className="loading-bar">
           <div className="loading-bar-fill" />
         </div>

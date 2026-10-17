@@ -1,7 +1,7 @@
 // PLACEHOLDER CONTENT — replace with the real details from the parish office.
 
 export const site = {
-  name: "St. Thomas Mar Thoma Yuvajana Sakhyam",
+  name: "St. Thomas Mar Thoma Youths Union",
   place: "Pattor",
   tagline: "A youth fellowship growing together in Christ",
   address: "St. Thomas Mar Thoma Church, Pattor, Kerala — PIN 000000", // PLACEHOLDER

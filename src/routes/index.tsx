@@ -6,7 +6,7 @@ import { site, weeklyRhythm, events, execom, formatEventDate } from "@/data/site
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "St. Thomas Mar Thoma Yuvajana Sakhyam, Pattor" },
+      { title: "St. Thomas Mar Thoma Youths Union, Pattor" },
       {
         name: "description",
         content:
