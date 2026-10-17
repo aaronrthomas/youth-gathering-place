@@ -31,20 +31,20 @@ function initials(name: string) {
 
 function ExecomPage() {
   return (
-    <div className="mx-auto max-w-6xl px-5 py-16">
-      <h1 className="font-serif text-4xl text-foreground">Executive committee</h1>
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-5 sm:py-16">
+      <h1 className="font-serif text-3xl text-foreground sm:text-4xl">Executive committee</h1>
       <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
         Members elected by the fellowship to plan our meetings, lead worship and coordinate
         the year's programmes.
       </p>
 
-      <div className="mt-10 grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 grid items-stretch gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
         {execom.map((m, i) => (
           <article
             key={`${m.role}-${i}`}
             className="flex flex-col rounded-2xl border border-border bg-card p-6 text-center transition-shadow hover:shadow-lg"
           >
-            <div className="mx-auto h-24 w-24 overflow-hidden rounded-2xl border border-primary/30 bg-primary/10">
+            <div className="mx-auto h-20 w-20 overflow-hidden rounded-2xl border border-primary/30 bg-primary/10 sm:h-24 sm:w-24">
               {m.photo ? (
                 <img
                   src={m.photo}

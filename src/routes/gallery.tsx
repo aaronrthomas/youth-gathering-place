@@ -1,4 +1,4 @@
-﻿import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { X, ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { adminStorage, type GalleryImage } from "@/hooks/useAdminData";
@@ -78,11 +78,11 @@ function GalleryPage() {
 
   return (
     <div>
-      <section className="border-b border-border/60 bg-secondary/40 px-5 py-16 text-center">
+      <section className="border-b border-border/60 bg-secondary/40 px-4 py-12 text-center sm:px-5 sm:py-16">
         <p className="text-xs uppercase tracking-[0.35em] text-primary">
           Our Moments
         </p>
-        <h1 className="mt-4 font-serif text-4xl text-foreground sm:text-5xl">
+        <h1 className="mt-4 font-serif text-3xl text-foreground sm:text-4xl md:text-5xl">
           Gallery
         </h1>
         <p className="mx-auto mt-4 max-w-lg text-sm text-muted-foreground">
@@ -91,7 +91,7 @@ function GalleryPage() {
         </p>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-16">
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-5 sm:py-16">
         {images.length === 0 ? (
           <EmptyState />
         ) : (
@@ -219,7 +219,7 @@ function Lightbox({
         </button>
       )}
 
-      <div className="mx-16 flex max-h-[90vh] max-w-5xl flex-col items-center gap-4 sm:mx-24">
+      <div className="mx-10 flex max-h-[90vh] max-w-5xl flex-col items-center gap-4 sm:mx-24">
         <img
           key={img.id}
           src={img.src}

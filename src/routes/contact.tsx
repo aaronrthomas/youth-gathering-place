@@ -31,8 +31,8 @@ function ContactPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-16">
-      <h1 className="font-serif text-4xl text-foreground">Join us</h1>
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-5 sm:py-16">
+      <h1 className="font-serif text-3xl text-foreground sm:text-4xl">Join us</h1>
       <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
         Come for the Sunday service and stay back for our meeting, or send us a message and
         someone from the committee will get back to you.

@@ -25,14 +25,14 @@ export const Route = createFileRoute("/events")({
 function EventsPage() {
   const { events, pastEvents, weeklyRhythm } = useAdminData();
   return (
-    <div className="mx-auto max-w-6xl px-5 py-16">
-      <h1 className="font-serif text-4xl text-foreground">Events & meetings</h1>
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-5 sm:py-16">
+      <h1 className="font-serif text-3xl text-foreground sm:text-4xl">Events & meetings</h1>
       <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
         Our week always begins with worship. Everything else — study, practice, service —
         grows out of that.
       </p>
 
-      <section className="mt-10 grid gap-6 sm:grid-cols-3">
+      <section className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
         {weeklyRhythm.map((slot) => (
           <div key={slot.title} className="rounded-2xl border border-border bg-secondary/50 p-6">
             <p className="text-xs uppercase tracking-[0.25em] text-primary">
@@ -46,9 +46,9 @@ function EventsPage() {
 
       <section className="mt-16">
         <h2 className="font-serif text-2xl text-foreground">Upcoming</h2>
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
+        <div className="mt-5 grid gap-5 sm:grid-cols-2">
           {events.map((ev) => (
-            <article key={ev.id} className="rounded-2xl border border-border bg-card p-6">
+            <article key={ev.id} className="rounded-2xl border border-border bg-card p-5 sm:p-6">
               <p className="text-xs uppercase tracking-[0.2em] text-primary">
                 {formatEventDate(ev.date)}
               </p>
@@ -67,7 +67,7 @@ function EventsPage() {
         </div>
       </section>
 
-      <section className="mt-16">
+      <section className="mt-12 sm:mt-16">
         <h2 className="font-serif text-2xl text-foreground">Recently held</h2>
         <ul className="mt-6 divide-y divide-border border-y border-border">
           {pastEvents.map((ev) => (

@@ -30,7 +30,7 @@ function Home() {
 
   return (
     <div>
-      <section className="relative overflow-hidden">
+      <section className="relative min-h-[70vh] overflow-hidden sm:min-h-[75vh]">
         <img
           src={heroImage}
           alt="Morning light falling on the wooden pews of the church at Pattor"
@@ -38,28 +38,28 @@ function Home() {
           height={1008}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/40" />
-        <div className="relative mx-auto max-w-6xl px-5 py-24 sm:py-32">
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/30" />
+        <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-32 lg:py-40">
           <p className="text-xs uppercase tracking-[0.35em] text-primary">
             {site.place} · Mar Thoma Parish
           </p>
-          <h1 className="mt-5 max-w-2xl font-serif text-4xl leading-tight text-foreground sm:text-6xl">
+          <h1 className="mt-4 max-w-2xl font-serif text-3xl leading-tight text-foreground sm:mt-5 sm:text-5xl lg:text-6xl">
             {site.name}
           </h1>
-          <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
+          <p className="mt-4 max-w-xl text-sm text-muted-foreground sm:mt-5 sm:text-base lg:text-lg">
             {site.tagline}. We gather every Sunday for worship, stay back for our
             fellowship meeting, and serve the neighbourhood around Pattor through the year.
           </p>
-          <div className="mt-9 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               Get in touch <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/events"
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-6 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background/70 px-6 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
             >
               See what's coming up
             </Link>
@@ -68,7 +68,7 @@ function Home() {
       </section>
 
       <section className="border-y border-border bg-secondary/50">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:grid-cols-3">
+        <div className="mx-auto grid max-w-6xl gap-6 px-5 py-12 sm:grid-cols-2 sm:gap-8 sm:py-14 lg:grid-cols-3">
           {liveRhythm.map((slot) => (
             <div key={slot.title}>
               <p className="text-xs uppercase tracking-[0.25em] text-primary">
@@ -88,7 +88,7 @@ function Home() {
             All events
           </Link>
         </div>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 md:grid-cols-3">
           {upcoming.map((ev) => (
             <article
               key={ev.id}
@@ -113,7 +113,7 @@ function Home() {
       </section>
 
       <section className="border-t border-border bg-secondary/40">
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-20 md:grid-cols-2">
+        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:py-20 md:grid-cols-2 md:gap-10">
           <div>
             <h2 className="font-serif text-3xl text-foreground">Who we are</h2>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
