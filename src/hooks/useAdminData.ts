@@ -25,6 +25,7 @@ import {
   deleteObject,
 } from "firebase/storage";
 import { db, storage } from "@/lib/firebase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import {
   events as defaultEvents,
   pastEvents as defaultPastEvents,
@@ -100,31 +101,76 @@ export function useAdminData() {
 // ---------------------------------------------------------------------------
 
 /**
- * Upload one File to Firebase Storage and return a GalleryImage record
- * with the permanent download URL.
+ * Upload one File to Supabase Storage (bucket: 'gallery') and return a GalleryImage record
+ * with the permanent public download URL.
  */
 export async function uploadGalleryImage(
   file: File,
   id: string,
 ): Promise<GalleryImage> {
-  const storageRef = ref(storage, `gallery/${id}_${file.name}`);
-  await uploadBytes(storageRef, file);
-  const src = await getDownloadURL(storageRef);
-  return {
-    id,
-    src,
-    caption: file.name.replace(/\.[^.]+$/, ""),
-  };
+  const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+  const fileName = `${id}_${sanitizedName}`;
+
+  if (isSupabaseConfigured) {
+    const { error: uploadError } = await supabase.storage
+      .from("gallery")
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new Error(`Supabase Storage upload failed: ${uploadError.message}`);
+    }
+
+    const { data } = supabase.storage.from("gallery").getPublicUrl(fileName);
+
+    return {
+      id,
+      src: data.publicUrl,
+      caption: file.name.replace(/\.[^.]+$/, ""),
+    };
+  }
+
+  // Fallback to Firebase Storage if Supabase is not yet configured in .env
+  try {
+    const storageRef = ref(storage, `gallery/${fileName}`);
+    await uploadBytes(storageRef, file);
+    const src = await getDownloadURL(storageRef);
+    return {
+      id,
+      src,
+      caption: file.name.replace(/\.[^.]+$/, ""),
+    };
+  } catch {
+    throw new Error(
+      "Supabase Storage is not configured yet. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.",
+    );
+  }
 }
 
 /**
- * Delete an image from Firebase Storage by its URL.
+ * Delete an image from Supabase Storage or Firebase Storage by its URL.
  * Fails silently if the file is already gone.
  */
 export async function deleteGalleryImage(src: string): Promise<void> {
   try {
-    const fileRef = ref(storage, src);
-    await deleteObject(fileRef);
+    if (src.includes("/storage/v1/object/public/gallery/")) {
+      const parts = src.split("/storage/v1/object/public/gallery/");
+      if (parts[1]) {
+        const filePath = decodeURIComponent(parts[1]);
+        await supabase.storage.from("gallery").remove([filePath]);
+        return;
+      }
+    }
+    // Backward-compatibility: delete from Firebase Storage if it was hosted there
+    if (
+      src.includes("firebasestorage.app") ||
+      src.includes("firebasestorage.googleapis.com")
+    ) {
+      const fileRef = ref(storage, src);
+      await deleteObject(fileRef);
+    }
   } catch {
     // File already deleted or URL not a Storage path — ignore.
   }
