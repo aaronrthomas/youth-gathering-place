@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Clock, MapPin } from "lucide-react";
 import heroImage from "@/assets/hero-church.jpg";
-import { site, weeklyRhythm, events, execom, formatEventDate } from "@/data/site";
+import { site, execom, formatEventDate } from "@/data/site";
+import { useAdminData } from "@/hooks/useAdminData";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const { events, weeklyRhythm: liveRhythm } = useAdminData();
   const upcoming = events.slice(0, 3);
 
   return (
@@ -67,7 +69,7 @@ function Home() {
 
       <section className="border-y border-border bg-secondary/50">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 sm:grid-cols-3">
-          {weeklyRhythm.map((slot) => (
+          {liveRhythm.map((slot) => (
             <div key={slot.title}>
               <p className="text-xs uppercase tracking-[0.25em] text-primary">
                 {slot.day} · {slot.time}

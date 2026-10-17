@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Clock, MapPin } from "lucide-react";
-import { events, pastEvents, weeklyRhythm, formatEventDate } from "@/data/site";
+import { formatEventDate } from "@/data/site";
+import { useAdminData } from "@/hooks/useAdminData";
 
 export const Route = createFileRoute("/events")({
   head: () => ({
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/events")({
 });
 
 function EventsPage() {
+  const { events, pastEvents, weeklyRhythm } = useAdminData();
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
       <h1 className="font-serif text-4xl text-foreground">Events & meetings</h1>
