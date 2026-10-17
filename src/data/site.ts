@@ -6,7 +6,7 @@ export const site = {
   tagline: "A youth fellowship growing together in Christ",
   address: "St. Thomas Mar Thoma Church, Pattor, Kerala — PIN 695024", // PLACEHOLDER
   phone: "+91 8921283787", // PLACEHOLDER
-  email: "stthomasmarthomayuvajanasakhyampattoor@gmail.com", // PLACEHOLDER
+  email: "youthsunion@gmail.com", // PLACEHOLDER
   instagram: "https://www.instagram.com/stmys_pattoor?obrf=MXczaGduN2tsMHI5aA==",
   whatsapp: "https://wa.me/918921283787",
 };
