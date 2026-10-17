@@ -1,17 +1,23 @@
-/**
+﻿/**
  * useAdminData
  *
- * Returns the live version of events, pastEvents and weeklyRhythm,
- * falling back to the static defaults when no admin edits have been saved.
+ * Returns the live version of events, pastEvents, weeklyRhythm and gallery.
  *
- * Admin edits are persisted in localStorage under these keys:
- *   - "admin:events"
- *   - "admin:pastEvents"
- *   - "admin:weeklyRhythm"
- *   - "admin:gallery"     (array of { id, src (data URL), caption })
+ * Events / pastEvents / weeklyRhythm are stored in Firestore so every
+ * visitor sees the latest admin edits in real-time.
+ *
+ * Gallery images (base64 data URLs) are kept in localStorage only because
+ * Firestore documents have a 1 MB limit that images quickly exceed.
+ *
+ * Firestore structure:
+ *   siteData/events        { items: CommunityEvent[] }
+ *   siteData/pastEvents    { items: CommunityEvent[] }
+ *   siteData/weeklyRhythm  { items: WeeklySlot[]     }
  */
 
 import { useState, useEffect } from "react";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import {
   events as defaultEvents,
   pastEvents as defaultPastEvents,
@@ -32,14 +38,23 @@ export type WeeklySlot = {
   detail: string;
 };
 
-const KEYS = {
-  events: "admin:events",
-  pastEvents: "admin:pastEvents",
-  weeklyRhythm: "admin:weeklyRhythm",
-  gallery: "admin:gallery",
-} as const;
+// ---------------------------------------------------------------------------
+// Firestore helpers
+// ---------------------------------------------------------------------------
 
-function read<T>(key: string, fallback: T): T {
+const FS = "siteData"; // Firestore collection name
+
+async function writeDoc<T>(docId: string, items: T) {
+  await setDoc(doc(db, FS, docId), { items });
+}
+
+// ---------------------------------------------------------------------------
+// localStorage helpers (gallery only)
+// ---------------------------------------------------------------------------
+
+const GALLERY_KEY = "admin:gallery";
+
+function readLocal<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
   try {
     const raw = localStorage.getItem(key);
@@ -58,44 +73,61 @@ export function saveToStorage<T>(key: string, value: T) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
 export function useAdminData() {
-  const [events, setEvents] = useState<CommunityEvent[]>(() =>
-    read(KEYS.events, defaultEvents),
-  );
-  const [pastEvents, setPastEvents] = useState<CommunityEvent[]>(() =>
-    read(KEYS.pastEvents, defaultPastEvents),
-  );
-  const [weeklyRhythm, setWeeklyRhythm] = useState<WeeklySlot[]>(() =>
-    read(KEYS.weeklyRhythm, defaultWeeklyRhythm),
-  );
+  // Start with static defaults so SSR and the first paint are instant.
+  const [events, setEvents] = useState<CommunityEvent[]>(defaultEvents);
+  const [pastEvents, setPastEvents] = useState<CommunityEvent[]>(defaultPastEvents);
+  const [weeklyRhythm, setWeeklyRhythm] = useState<WeeklySlot[]>(defaultWeeklyRhythm);
   const [gallery, setGallery] = useState<GalleryImage[]>(() =>
-    read(KEYS.gallery, []),
+    readLocal(GALLERY_KEY, []),
   );
 
   useEffect(() => {
+    // Subscribe to Firestore — updates arrive on ALL devices in real-time.
+    const unsubEvents = onSnapshot(doc(db, FS, "events"), (snap) => {
+      setEvents(snap.exists() ? (snap.data().items as CommunityEvent[]) : defaultEvents);
+    });
+
+    const unsubPast = onSnapshot(doc(db, FS, "pastEvents"), (snap) => {
+      setPastEvents(snap.exists() ? (snap.data().items as CommunityEvent[]) : defaultPastEvents);
+    });
+
+    const unsubRhythm = onSnapshot(doc(db, FS, "weeklyRhythm"), (snap) => {
+      setWeeklyRhythm(snap.exists() ? (snap.data().items as WeeklySlot[]) : defaultWeeklyRhythm);
+    });
+
+    // Gallery stays local (images too large for Firestore).
     function onStorage(e: StorageEvent) {
-      if (e.key === KEYS.events)
-        setEvents(read(KEYS.events, defaultEvents));
-      if (e.key === KEYS.pastEvents)
-        setPastEvents(read(KEYS.pastEvents, defaultPastEvents));
-      if (e.key === KEYS.weeklyRhythm)
-        setWeeklyRhythm(read(KEYS.weeklyRhythm, defaultWeeklyRhythm));
-      if (e.key === KEYS.gallery) setGallery(read(KEYS.gallery, []));
+      if (e.key === GALLERY_KEY) setGallery(readLocal(GALLERY_KEY, []));
     }
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+
+    return () => {
+      unsubEvents();
+      unsubPast();
+      unsubRhythm();
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   return { events, pastEvents, weeklyRhythm, gallery };
 }
 
+// ---------------------------------------------------------------------------
+// adminStorage — called by admin.tsx to persist changes
+// ---------------------------------------------------------------------------
+
 export const adminStorage = {
-  saveEvents: (data: CommunityEvent[]) => saveToStorage(KEYS.events, data),
-  savePastEvents: (data: CommunityEvent[]) =>
-    saveToStorage(KEYS.pastEvents, data),
-  saveWeeklyRhythm: (data: WeeklySlot[]) =>
-    saveToStorage(KEYS.weeklyRhythm, data),
-  saveGallery: (data: GalleryImage[]) => saveToStorage(KEYS.gallery, data),
-  read,
-  KEYS,
+  saveEvents: (data: CommunityEvent[]) => writeDoc("events", data),
+  savePastEvents: (data: CommunityEvent[]) => writeDoc("pastEvents", data),
+  saveWeeklyRhythm: (data: WeeklySlot[]) => writeDoc("weeklyRhythm", data),
+  // Gallery stays in localStorage only
+  saveGallery: (data: GalleryImage[]) => saveToStorage(GALLERY_KEY, data),
+  // Kept for backwards-compatibility (used nowhere else currently)
+  read: readLocal,
+  KEYS: { gallery: GALLERY_KEY },
 };
