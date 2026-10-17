@@ -70,19 +70,19 @@ export function useAdminData() {
   useEffect(() => {
     // Subscribe to Firestore — updates arrive on ALL devices in real-time.
     const unsubEvents = onSnapshot(doc(db, FS, "events"), (snap) => {
-      setEvents(snap.exists() ? (snap.data().items as CommunityEvent[]) : defaultEvents);
+      setEvents(snap.exists() ? (snap.data()["items"] as CommunityEvent[]) : defaultEvents);
     });
 
     const unsubPast = onSnapshot(doc(db, FS, "pastEvents"), (snap) => {
-      setPastEvents(snap.exists() ? (snap.data().items as CommunityEvent[]) : defaultPastEvents);
+      setPastEvents(snap.exists() ? (snap.data()["items"] as CommunityEvent[]) : defaultPastEvents);
     });
 
     const unsubRhythm = onSnapshot(doc(db, FS, "weeklyRhythm"), (snap) => {
-      setWeeklyRhythm(snap.exists() ? (snap.data().items as WeeklySlot[]) : defaultWeeklyRhythm);
+      setWeeklyRhythm(snap.exists() ? (snap.data()["items"] as WeeklySlot[]) : defaultWeeklyRhythm);
     });
 
     const unsubGallery = onSnapshot(doc(db, FS, "gallery"), (snap) => {
-      setGallery(snap.exists() ? (snap.data().items as GalleryImage[]) : []);
+      setGallery(snap.exists() ? (snap.data()["items"] as GalleryImage[]) : []);
     });
 
     return () => {
