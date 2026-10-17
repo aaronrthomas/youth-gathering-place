@@ -4,11 +4,11 @@ export const site = {
   name: "St. Thomas Mar Thoma Youths Union",
   place: "Pattor",
   tagline: "A youth fellowship growing together in Christ",
-  address: "St. Thomas Mar Thoma Church, Pattor, Kerala — PIN 000000", // PLACEHOLDER
-  phone: "+91 00000 00000", // PLACEHOLDER
-  email: "yuvajanasakhyam.pattor@example.com", // PLACEHOLDER
-  instagram: "https://instagram.com/", // PLACEHOLDER
-  whatsapp: "https://wa.me/910000000000", // PLACEHOLDER
+  address: "St. Thomas Mar Thoma Church, Pattor, Kerala — PIN 695024", // PLACEHOLDER
+  phone: "+91 8921283787", // PLACEHOLDER
+  email: "stthomasmarthomayuvajanasakhyampattoor@gmail.com", // PLACEHOLDER
+  instagram: "https://www.instagram.com/stmys_pattoor?obrf=MXczaGduN2tsMHI5aA==",
+  whatsapp: "https://wa.me/918921283787",
 };
 
 export const weeklyRhythm = [
