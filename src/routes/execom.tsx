@@ -38,14 +38,24 @@ function ExecomPage() {
         the year's programmes.
       </p>
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {execom.map((m, i) => (
           <article
             key={`${m.role}-${i}`}
-            className="rounded-2xl border border-border bg-card p-6 text-center transition-shadow hover:shadow-lg"
+            className="flex flex-col rounded-2xl border border-border bg-card p-6 text-center transition-shadow hover:shadow-lg"
           >
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-primary/30 bg-primary/10 font-serif text-2xl text-primary">
-              {initials(m.name)}
+            <div className="mx-auto h-24 w-24 overflow-hidden rounded-2xl border border-primary/30 bg-primary/10">
+              {m.photo ? (
+                <img
+                  src={m.photo}
+                  alt={m.name}
+                  className="h-full w-full object-cover object-top"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center font-serif text-2xl text-primary">
+                  {initials(m.name)}
+                </div>
+              )}
             </div>
             <h2 className="mt-4 font-serif text-lg text-card-foreground">{m.name}</h2>
             <p className="mt-1 text-xs uppercase tracking-[0.2em] text-primary">{m.role}</p>
@@ -53,11 +63,6 @@ function ExecomPage() {
           </article>
         ))}
       </div>
-
-      <p className="mt-10 text-xs text-muted-foreground">
-        Names shown are placeholders — share the real committee list and photos and they
-        will be updated here.
-      </p>
     </div>
   );
 }

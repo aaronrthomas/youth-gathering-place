@@ -112,18 +112,18 @@ export type ExecomMember = {
   name: string;
   role: string;
   note?: string;
+  photo?: string;
 };
 
 // PLACEHOLDER execom — send us the real names and we'll update them.
 export const execom: ExecomMember[] = [
-  { name: "Member Name", role: "President", note: "Vicar of the parish" },
-  { name: "Member Name", role: "Vice President" },
-  { name: "Member Name", role: "Secretary" },
-  { name: "Member Name", role: "Joint Secretary" },
-  { name: "Member Name", role: "Treasurer" },
-  { name: "Member Name", role: "Choir Coordinator" },
-  { name: "Member Name", role: "Outreach Coordinator" },
-  { name: "Member Name", role: "Committee Member" },
+  { name: "Rev. A T Thomas", role: "President", note: "Vicar of the parish", photo: "/execom/at-thomas.jpg" },
+  { name: "Rev. Jithin Raju", role: "Assistant Vicar", photo: "/execom/jithin-raju.jpg" },
+  { name: "Jis Thomas", role: "Vice President", photo: "/execom/jis.jpg" },
+  { name: "Rohan George John", role: "Secretary", photo: "/execom/rohan.jpg" },
+  { name: "Shifa Mariam Sojan", role: "Joint Secretary", photo: "/execom/shifa.jpg" },
+  { name: "Dany John Solomon", role: "Treasurer", photo: "/execom/dany.jpg" },
+  { name: "Aneeta Achu Joju", role: "Kaisthana Samithy Representative", photo: "/execom/aneeta.jpg" },
 ];
 
 export function formatEventDate(iso: string) {
