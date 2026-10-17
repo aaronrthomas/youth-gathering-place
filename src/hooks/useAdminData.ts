@@ -116,7 +116,7 @@ export async function uploadGalleryImage(
       .from("gallery")
       .upload(fileName, file, {
         cacheControl: "3600",
-        upsert: true,
+        upsert: false,
       });
 
     if (uploadError) {
