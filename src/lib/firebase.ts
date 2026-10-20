@@ -2,7 +2,7 @@
 // Credentials are loaded from environment variables (VITE_FIREBASE_*).
 // Never commit .env — see .env.example for the required keys.
 
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
@@ -17,7 +17,7 @@ const firebaseConfig = {
 
 // Prevent duplicate initialisation during hot-reload / SSR
 const app =
-  getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
